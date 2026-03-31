@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { SpotlightCard } from "@/components/ui/SpotlightCard";
 
 interface StatCardProps {
   title: string;
@@ -9,40 +10,32 @@ interface StatCardProps {
 }
 
 /**
- * StatCard – Linear Modern Cinematic Style
- * Multi-layer shadow, ambient bg, inner highlight edge.
+ * StatCard – Refactored to use SpotlightCard
  */
 export function StatCard({
   title,
   value,
   description,
-  accentClass = "text-accent", // changed to text accent instead of bg block
+  accentClass = "text-accent",
   icon,
 }: StatCardProps) {
   return (
-    <div className="group relative overflow-hidden rounded-2xl transition-all duration-300 ease-out hover:-translate-y-1 bg-gradient-to-b from-white/[0.04] to-transparent shadow-cinematic hover:shadow-cinematic-hover border border-border-default hover:border-border-hover">
-      
-      {/* Inner top highlight line */}
-      <div className="absolute inset-0 rounded-2xl pointer-events-none shadow-inner-glow" />
-      
-      {/* Optional Mouse Spotlight (Simulated via hover gradient overlay) */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(94,106,210,0.1)_0%,transparent_70%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-
+    <SpotlightCard className="flex flex-col h-full">
       {/* Header block */}
-      <div className="px-6 py-5 flex items-center justify-between">
+      <div className="px-5 py-4 flex items-center justify-between">
         <p className="text-foreground-muted text-sm font-500 tracking-tight">{title}</p>
-        <div className={cn("text-foreground-subtle group-hover:drop-shadow-[0_0_8px_rgba(94,106,210,0.5)] transition-all duration-300", accentClass)}>
+        <div className={cn("text-foreground-subtle transition-all duration-300", accentClass)}>
           {icon}
         </div>
       </div>
       
       {/* Value block */}
-      <div className="px-6 pb-6 relative z-10">
+      <div className="px-5 pb-5 mt-auto">
         <p className="text-3xl font-600 text-foreground tracking-tight">{value}</p>
         {description && (
-          <p className="text-sm text-foreground-muted mt-2 font-400">{description}</p>
+          <p className="text-xs text-foreground-muted mt-2 font-400">{description}</p>
         )}
       </div>
-    </div>
+    </SpotlightCard>
   );
 }

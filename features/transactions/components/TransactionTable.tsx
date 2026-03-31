@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { type Transaction } from "@/lib/validators/fraud";
 import { cn } from "@/lib/utils";
 import { AlertTriangle, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { SpotlightCard } from "@/components/ui/SpotlightCard";
 
 const PAGE_SIZE = 8;
 
@@ -59,8 +60,7 @@ export function TransactionTable({ transactions }: { transactions: Transaction[]
   }
 
   return (
-    <div className="bg-gradient-to-b from-white/[0.04] to-transparent rounded-2xl border border-border-default shadow-cinematic overflow-hidden relative">
-      <div className="absolute inset-0 pointer-events-none rounded-2xl shadow-inner-glow" />
+    <SpotlightCard className="col-span-12">
       
       {/* Toolbar */}
       <div className="px-6 py-5 border-b border-border-default/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -191,7 +191,7 @@ export function TransactionTable({ transactions }: { transactions: Transaction[]
           </PagingBtn>
         </div>
       </div>
-    </div>
+    </SpotlightCard>
   );
 }
 

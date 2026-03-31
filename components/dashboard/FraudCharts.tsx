@@ -14,6 +14,8 @@ import {
   Legend,
 } from "recharts";
 
+import { SpotlightCard } from "@/components/ui/SpotlightCard";
+
 // ─── Deep Space Palette ───────────────────────────────────────
 const COLORS = [
   "#5E6AD2", // Signature Accent (Indigo)
@@ -61,11 +63,9 @@ const GlassTooltip = ({ active, payload, label }: any) => {
 
 export function FraudCharts({ fraudByType, fraudByTxType }: FraudChartsProps) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <>
       {/* ─ Biểu đồ cột: Phân bổ ─ */}
-      <div className="bg-gradient-to-b from-white/[0.04] to-transparent rounded-2xl p-6 border border-border-default shadow-cinematic relative overflow-hidden group">
-        <div className="absolute inset-0 rounded-2xl pointer-events-none shadow-inner-glow" />
-        
+      <SpotlightCard className="p-6 relative overflow-hidden group h-full col-span-12 lg:col-span-8">
         <h3 className="text-sm font-500 text-foreground-muted tracking-tight mb-8">
           Phân loại Cảnh báo
         </h3>
@@ -98,11 +98,10 @@ export function FraudCharts({ fraudByType, fraudByTxType }: FraudChartsProps) {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </SpotlightCard>
 
       {/* ─ Biểu đồ tròn: Tỉ lệ ─ */}
-      <div className="bg-gradient-to-b from-white/[0.04] to-transparent rounded-2xl p-6 border border-border-default shadow-cinematic relative overflow-hidden group">
-        <div className="absolute inset-0 rounded-2xl pointer-events-none shadow-inner-glow" />
+      <SpotlightCard className="p-6 relative overflow-hidden group h-full col-span-12 lg:col-span-4">
         <div className="absolute right-0 top-0 w-64 h-64 bg-accent-glow blur-[80px] rounded-full pointer-events-none opacity-20 group-hover:opacity-40 transition-opacity duration-700" />
         
         <h3 className="text-sm font-500 text-foreground-muted tracking-tight mb-8 relative z-10">
@@ -156,7 +155,7 @@ export function FraudCharts({ fraudByType, fraudByTxType }: FraudChartsProps) {
             />
           </PieChart>
         </ResponsiveContainer>
-      </div>
-    </div>
+      </SpotlightCard>
+    </>
   );
 }
