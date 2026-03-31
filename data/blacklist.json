@@ -1,0 +1,52 @@
+[
+    {
+        "account_id": "C38997010",
+        "reason": "Suspected Money Laundering",
+        "added_at": "2026-01-15T08:30:00Z"
+    },
+    {
+        "account_id": "M972865270",
+        "reason": "Reported Fraudulent Merchant",
+        "added_at": "2026-02-10T14:20:00Z"
+    },
+    {
+        "account_id": "C195600860",
+        "reason": "Scam Account - Bank Alert",
+        "added_at": "2026-03-01T09:00:00Z"
+    },
+    {
+        "account_id": "C771234567",
+        "reason": "Synthethic Identity Fraud",
+        "added_at": "2026-03-05T11:15:00Z"
+    },
+    {
+        "account_id": "M112233445",
+        "reason": "Sanctioned Entity List",
+        "added_at": "2026-03-12T16:45:00Z"
+    },
+    {
+        "account_id": "C998877665",
+        "reason": "Confirmed Money Mule",
+        "added_at": "2026-03-18T10:00:00Z"
+    },
+    {
+        "account_id": "C554433221",
+        "reason": "Social Engineering Victim Account",
+        "added_at": "2026-03-20T22:30:00Z"
+    },
+    {
+        "account_id": "M665544332",
+        "reason": "Unlicensed Gambling Site",
+        "added_at": "2026-03-22T04:10:00Z"
+    },
+    {
+        "account_id": "C443322110",
+        "reason": "Multiple Account Takeover Victim",
+        "added_at": "2026-03-25T13:00:00Z"
+    },
+    {
+        "account_id": "C100200300",
+        "reason": "Credit Card Skimming Ring Member",
+        "added_at": "2026-03-28T09:50:00Z"
+    }
+]

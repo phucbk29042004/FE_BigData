@@ -1,0 +1,160 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap");
+@import "tailwindcss";
+
+/* ─── Linear / Modern: Design Tokens (Cinematic Dark Mode) ──── */
+:root {
+  /* Deep Space Palette */
+  --bg-deep: #020203;
+  --bg-base: #050506;
+  --bg-elevated: #0a0a0c;
+  
+  --surface: rgba(255, 255, 255, 0.05);
+  --surface-hover: rgba(255, 255, 255, 0.08);
+
+  --foreground: #EDEDEF;
+  --foreground-muted: #8A8F98;
+  --foreground-subtle: rgba(255, 255, 255, 0.60);
+
+  /* Signature Accent */
+  --accent: #5E6AD2;
+  --accent-bright: #6872D9;
+  --accent-glow: rgba(94, 106, 210, 0.3);
+
+  /* Borders */
+  --border-default: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(255, 255, 255, 0.10);
+  --border-accent: rgba(94, 106, 210, 0.30);
+  
+  /* Status Colors (Adjusted for dark mode harmony) */
+  --emerald: #10b981;
+  --amber: #f59e0b;
+  --rose: #e11d48;
+
+  /* Typographic bindings */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  
+  --radius: 16px;
+}
+
+/* ─── Base Styles ────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--foreground);
+  min-height: 100dvh;
+}
+
+/* ─── Typography & Effects ──────────────────────────────────── */
+
+/* Headline Dimensionality */
+.gradient-heading {
+  background: linear-gradient(to bottom, #FFFFFF, rgba(255,255,255,0.7));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
+}
+
+/* Accent Glow Text */
+.gradient-accent {
+  background: linear-gradient(to right, var(--accent), #9E7BFF, var(--accent));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shine 4s linear infinite;
+  display: inline-block;
+}
+
+@keyframes shine {
+  to { background-position: 200% center; }
+}
+
+.text-mono {
+  font-family: var(--font-mono);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* Focus Rings */
+*:focus-visible {
+  outline: 2px solid var(--accent-glow);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* ─── Environment Layers (Cinematic Ambient Lighting) ───────── */
+
+/* 1. Base Gradient */
+.bg-ambient-layer {
+  background: radial-gradient(ellipse at top, #0a0a0f 0%, #050506 50%, #020203 100%);
+}
+
+/* 2. Noise Texture (Prevents banding, adds filmic grain) */
+.texture-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+  mix-blend-mode: overlay;
+}
+
+/* 3. Grid Overlay */
+.texture-grid {
+  background-size: 64px 64px;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Active Floating Blob animations */
+.blob-float {
+  animation: float-blob 8s ease-in-out infinite;
+}
+.blob-float-alt {
+  animation: float-blob 12s ease-in-out infinite reverse;
+}
+@keyframes float-blob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(2deg); }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+/* ─── Tailwind 4 Theme Extension ─────────────────────────────── */
+@theme inline {
+  --color-background-base: var(--bg-base);
+  --color-background-elevated: var(--bg-elevated);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-accent: var(--accent);
+  --color-accent-bright: var(--accent-bright);
+  --color-border-default: var(--border-default);
+  --color-border-hover: var(--border-hover);
+  
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  
+  /* Multi-Layer Cinematic Shadow System */
+  /* Card Default: Border highlight + Soft Diffuse + Ambient Dark */
+  --shadow-cinematic: 0 0 0 1px rgba(255,255,255,0.06), 0 2px 20px rgba(0,0,0,0.4), 0 0 40px rgba(0,0,0,0.2);
+  /* Card Hover: Stronger highlight + Deep diffuse + Accent Glow */
+  --shadow-cinematic-hover: 0 0 0 1px rgba(255,255,255,0.1), 0 8px 40px rgba(0,0,0,0.5), 0 0 80px rgba(94,106,210,0.1);
+  /* Accent CTA Glow */
+  --shadow-cta-glow: 0 0 0 1px rgba(94,106,210,0.5), 0 4px 12px rgba(94,106,210,0.3), inset 0 1px 0 0 rgba(255,255,255,0.2);
+  /* Inner Top Edge Highlight */
+  --shadow-inner-glow: inset 0 1px 0 0 rgba(255,255,255,0.1);
+}
