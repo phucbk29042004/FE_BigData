@@ -23,8 +23,8 @@ export default function DashboardLayout({
       <div className="relative z-10 flex w-full">
         <Sidebar />
         {/* Offset content by sidebar width (w-56 = 224px) */}
-        <main className="flex-1 overflow-y-auto w-full pl-56">
-          <div className="max-w-[1400px] mx-auto p-8 lg:p-12">
+        <main className="flex-1 overflow-y-auto w-full pt-16 lg:pt-0 pl-0 lg:pl-56 transition-all duration-300">
+          <div className="max-w-[1400px] mx-auto p-4 md:p-8 lg:p-12">
             {children}
           </div>
         </main>
