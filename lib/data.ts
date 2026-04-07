@@ -1,4 +1,4 @@
-import fs from "fs";
+﻿import fs from "fs";
 import path from "path";
 import {
   TransactionListSchema,
@@ -6,26 +6,65 @@ import {
   type Transaction,
   type BlacklistEntry,
 } from "@/lib/validators/fraud";
+import {
+  readRecentTransactions,
+  resolveTransactionStreamConfig,
+} from "@/lib/realtime/transactions-stream";
 
-// ─── Đường dẫn tới file dữ liệu tĩnh ────────────────────────────
+// Duong dan toi file du lieu tinh
 const DATA_DIR = path.join(process.cwd(), "data");
+const REDIS_SNAPSHOT_LIMIT = 400;
 
 /**
- * Đọc và validate toàn bộ danh sách giao dịch từ file JSON tĩnh.
- * Server-only function – không gọi từ Client Component.
+ * Doc va validate toan bo danh sach giao dich.
+ * Thu tu uu tien:
+ * 1) Redis (stream/json key/value) de hien thi du lieu moi nhat
+ * 2) File JSON tinh khi Redis chua co data hop le
  */
 export async function getTransactions(): Promise<Transaction[]> {
-  const raw = fs.readFileSync(path.join(DATA_DIR, "transactions.json"), "utf-8");
-  const parsed = TransactionListSchema.safeParse(JSON.parse(raw));
-  if (!parsed.success) {
-    console.error("[getTransactions] Validation error:", parsed.error.flatten());
+  const redisConfig = resolveTransactionStreamConfig();
+
+  if (redisConfig) {
+    try {
+      const redisTransactions = await readRecentTransactions(
+        redisConfig,
+        REDIS_SNAPSHOT_LIMIT,
+      );
+
+      if (redisTransactions.length > 0) {
+        return redisTransactions;
+      }
+
+      console.warn(
+        "[getTransactions] Redis is configured but returned no valid transactions. Falling back to local file.",
+      );
+    } catch (error) {
+      console.warn("[getTransactions] Redis read failed, fallback to local file.", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  return readTransactionsFromFile();
+}
+
+function readTransactionsFromFile(): Transaction[] {
+  try {
+    const raw = fs.readFileSync(path.join(DATA_DIR, "transactions.json"), "utf-8");
+    const parsed = TransactionListSchema.safeParse(JSON.parse(raw));
+    if (!parsed.success) {
+      console.error("[getTransactions] Validation error:", parsed.error.flatten());
+      return [];
+    }
+    return parsed.data;
+  } catch (error) {
+    console.error("[getTransactions] Failed to read local transactions file:", error);
     return [];
   }
-  return parsed.data;
 }
 
 /**
- * Đọc và validate toàn bộ danh sách đen từ file JSON tĩnh.
+ * Doc va validate toan bo danh sach den tu file JSON tinh.
  * Server-only function.
  */
 export async function getBlacklist(): Promise<BlacklistEntry[]> {
@@ -39,9 +78,9 @@ export async function getBlacklist(): Promise<BlacklistEntry[]> {
 }
 
 /**
- * Tổng hợp thống kê gian lận cho Dashboard:
- * - Tổng số giao dịch, số gian lận, tổng tiền gian lận
- * - Tỉ lệ gian lận theo loại (FraudType distribution)
+ * Tong hop thong ke gian lan cho Dashboard:
+ * - Tong so giao dich, so gian lan, tong tien gian lan
+ * - Ti le gian lan theo loai (FraudType distribution)
  */
 export async function getFraudStats() {
   const transactions = await getTransactions();
@@ -49,7 +88,7 @@ export async function getFraudStats() {
   const totalAmount = transactions.reduce((s, t) => s + t.amount, 0);
   const fraudAmount = fraudulent.reduce((s, t) => s + t.amount, 0);
 
-  // Tính phân phối loại gian lận
+  // Tinh phan phoi loai gian lan
   const fraudTypeMap: Record<string, number> = {};
   for (const t of fraudulent) {
     if (t.fraud_type) {
@@ -61,7 +100,7 @@ export async function getFraudStats() {
     count,
   }));
 
-  // Tỉ lệ gian lận theo loại giao dịch (PAYMENT, TRANSFER, CASH_OUT)
+  // Ti le gian lan theo loai giao dich (PAYMENT, TRANSFER, CASH_OUT)
   const typeMap: Record<string, { total: number; fraud: number }> = {};
   for (const t of transactions) {
     if (!typeMap[t.type]) typeMap[t.type] = { total: 0, fraud: 0 };

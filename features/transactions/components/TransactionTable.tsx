@@ -1,8 +1,13 @@
 "use client";
 
+import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type Transaction } from "@/lib/validators/fraud";
 import { cn } from "@/lib/utils";
+import {
+  type StreamStatus,
+  useLiveTransactions,
+} from "@/features/transactions/hooks/useLiveTransactions";
 import { AlertTriangle, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 
 const PAGE_SIZE = 8;
@@ -21,6 +26,7 @@ const TX_TYPE_LABELS: Record<string, string> = {
   PAYMENT: "Thanh toán",
   DEPOSIT: "Nạp tiền",
   WITHDRAWAL: "Rút tiền",
+  CASH_OUT: "Rút tiền",
 };
 
 const TX_TYPE_COLORS: Record<string, string> = {
@@ -28,22 +34,36 @@ const TX_TYPE_COLORS: Record<string, string> = {
   PAYMENT: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
   DEPOSIT: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
   WITHDRAWAL: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+  CASH_OUT: "bg-orange-500/10 text-orange-400 border-orange-500/20",
+};
+
+const STREAM_BADGE_LABELS: Record<StreamStatus, string> = {
+  connecting: "Đang kết nối",
+  connected: "Realtime",
+  disconnected: "Mất kết nối",
+};
+
+const STREAM_BADGE_COLORS: Record<StreamStatus, string> = {
+  connecting: "text-amber border-amber/20",
+  connected: "text-emerald border-emerald/20",
+  disconnected: "text-rose border-rose/20",
 };
 
 export function TransactionTable({ transactions }: { transactions: Transaction[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = new URLSearchParams(searchParams.toString());
+  const { transactions: liveTransactions, streamStatus } = useLiveTransactions(transactions);
 
   const currentPage = Number(params.get("page") ?? 1);
   const fraudFilter = params.get("fraud");
 
   const filtered =
     fraudFilter === "1"
-      ? transactions.filter((t) => t.is_fraud === 1)
+      ? liveTransactions.filter((t) => t.is_fraud === 1)
       : fraudFilter === "0"
-        ? transactions.filter((t) => t.is_fraud === 0)
-        : transactions;
+        ? liveTransactions.filter((t) => t.is_fraud === 0)
+        : liveTransactions;
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE) || 1;
   const safePage = Math.min(currentPage, totalPages);
@@ -68,9 +88,19 @@ export function TransactionTable({ transactions }: { transactions: Transaction[]
           <h2 className="text-sm font-600 text-foreground tracking-tight">
             Lịch sử Giao dịch
           </h2>
-          <p className="text-xs text-foreground-muted mt-0.5">
-            {filtered.length} bản ghi
-          </p>
+          <div className="mt-1 flex items-center gap-2">
+            <p className="text-xs text-foreground-muted">
+              {filtered.length} bản ghi
+            </p>
+            <span
+              className={cn(
+                "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest",
+                STREAM_BADGE_COLORS[streamStatus]
+              )}
+            >
+              {STREAM_BADGE_LABELS[streamStatus]}
+            </span>
+          </div>
         </div>
         
         <div className="flex gap-1.5 p-1 bg-surface border border-border-default rounded-lg">
@@ -99,7 +129,19 @@ export function TransactionTable({ transactions }: { transactions: Transaction[]
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border-default/40 bg-white/[0.01]">
-              {["Mã GD", "Thời gian", "Người Gửi", "Người Nhận", "Loại", "Số tiền (₫)", "Thiết bị", "Trạng thái"].map(
+              {[
+                "Mã GD",
+                "Thời gian",
+                "Người Gửi",
+                "Người Nhận",
+                "Loại",
+                "Số tiền (₫)",
+                "IP",
+                "Vị trí",
+                "Thiết bị",
+                "Xác suất",
+                "Trạng thái",
+              ].map(
                 (h) => (
                   <th
                     key={h}
@@ -141,7 +183,29 @@ export function TransactionTable({ transactions }: { transactions: Transaction[]
                 <td className="px-5 py-4 font-mono font-500 text-foreground whitespace-nowrap text-xs">
                   {tx.amount.toLocaleString("vi-VN")} ₫
                 </td>
-                <td className="px-5 py-4 text-foreground-subtle text-[11px] font-mono">{tx.device_id.slice(0, 10)}...</td>
+                <td className="px-5 py-4 text-foreground-subtle text-[11px] font-mono whitespace-nowrap">
+                  {tx.ip_address}
+                </td>
+                <td className="px-5 py-4 text-foreground-subtle text-[11px] font-mono whitespace-nowrap">
+                  {tx.location}
+                </td>
+                <td className="px-5 py-4 text-foreground-subtle text-[11px] font-mono whitespace-nowrap">
+                  {tx.device_id}
+                </td>
+                <td className="px-5 py-4">
+                  <span
+                    className={cn(
+                      "px-2 py-0.5 rounded border text-[10px] font-mono tracking-wider whitespace-nowrap",
+                      tx.fraud_probability !== undefined
+                        ? "border-amber/20 text-amber bg-amber/10"
+                        : "border-border-default text-foreground-muted bg-surface"
+                    )}
+                  >
+                    {tx.fraud_probability !== undefined
+                      ? `${(tx.fraud_probability * 100).toFixed(1)}%`
+                      : "N/A"}
+                  </span>
+                </td>
                 <td className="px-5 py-4">
                   {tx.is_fraud === 1 ? (
                     <div className="flex flex-col gap-1.5 items-start">
@@ -219,7 +283,12 @@ function FilterBtn({
   );
 }
 
-function PagingBtn({ disabled, children, ...props }: any) {
+type PagingBtnProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  disabled: boolean;
+  children: ReactNode;
+};
+
+function PagingBtn({ disabled, children, ...props }: PagingBtnProps) {
   return (
     <button
       disabled={disabled}
@@ -235,3 +304,4 @@ function PagingBtn({ disabled, children, ...props }: any) {
     </button>
   );
 }
+

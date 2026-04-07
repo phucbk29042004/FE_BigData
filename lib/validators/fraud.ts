@@ -21,6 +21,9 @@ export const TransactionSchema = z.object({
   ip_address: z.string(),
   is_fraud: z.union([z.literal(0), z.literal(1)]),
   fraud_type: z.string().nullable(),
+  fraud_probability: z.number().min(0).max(1).optional(),
+  hour: z.number().int().min(0).max(23).optional(),
+  is_in_blacklist: z.union([z.literal(0), z.literal(1)]).optional(),
 });
 
 export type Transaction = z.infer<typeof TransactionSchema>;
