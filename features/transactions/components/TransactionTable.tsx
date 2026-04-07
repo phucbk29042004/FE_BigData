@@ -4,10 +4,7 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type Transaction } from "@/lib/validators/fraud";
 import { cn } from "@/lib/utils";
-import {
-  type StreamStatus,
-  useLiveTransactions,
-} from "@/features/transactions/hooks/useLiveTransactions";
+import { useSharedLiveTransactions } from "@/features/transactions/components/LiveTransactionsProvider";
 import { AlertTriangle, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 
 const PAGE_SIZE = 8;
@@ -37,23 +34,23 @@ const TX_TYPE_COLORS: Record<string, string> = {
   CASH_OUT: "bg-orange-500/10 text-orange-400 border-orange-500/20",
 };
 
-const STREAM_BADGE_LABELS: Record<StreamStatus, string> = {
+const STREAM_BADGE_LABELS: Record<string, string> = {
   connecting: "Đang kết nối",
   connected: "Realtime",
   disconnected: "Mất kết nối",
 };
 
-const STREAM_BADGE_COLORS: Record<StreamStatus, string> = {
+const STREAM_BADGE_COLORS: Record<string, string> = {
   connecting: "text-amber border-amber/20",
   connected: "text-emerald border-emerald/20",
   disconnected: "text-rose border-rose/20",
 };
 
-export function TransactionTable({ transactions }: { transactions: Transaction[] }) {
+export function TransactionTable() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = new URLSearchParams(searchParams.toString());
-  const { transactions: liveTransactions, streamStatus } = useLiveTransactions(transactions);
+  const { liveTransactions, streamStatus } = useSharedLiveTransactions();
 
   const currentPage = Number(params.get("page") ?? 1);
   const fraudFilter = params.get("fraud");

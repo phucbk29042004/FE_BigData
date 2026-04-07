@@ -3,6 +3,7 @@ import { getFraudStats, getTransactions } from "@/lib/data";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { FraudCharts } from "@/components/dashboard/FraudCharts";
 import { TransactionTable } from "@/features/transactions/components/TransactionTable";
+import { LiveTransactionsProvider } from "@/features/transactions/components/LiveTransactionsProvider";
 import { ShieldAlert, Activity, DollarSign, TrendingUp, Zap } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -47,22 +48,30 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {/* ─── Charts ─── */}
-      <FraudCharts
-        fraudByType={stats.fraudByType}
-        fraudByTxType={stats.fraudByTxType}
-      />
+      {/* ─── Provider thời gian thực cho Biểu đồ & Bảng ─── */}
+      <LiveTransactionsProvider initialTransactions={transactions}>
+        {/*
+          FraudCharts nhận dữ liệu từ LiveTransactionsProvider và tự tổng hợp nội bộ bằng useFraudChartData:
+            - Biểu đồ 1: Tần suất Giao dịch Gian lận Theo Thời gian (AreaChart)
+            - Biểu đồ 2: Phân bố Mức độ Rủi ro (PieChart)
+            - Biểu đồ 3: Phân loại Cảnh báo (Horizontal BarChart)
+            - Biểu đồ 4: Nguồn Giao dịch (Grouped BarChart)
+        */}
+        <FraudCharts />
 
-      {/* ─── Transaction Table ─── */}
-      <Suspense
-        fallback={
-          <div className="w-full h-96 flex items-center justify-center bg-gradient-to-b from-white/[0.04] to-transparent rounded-2xl border border-border-default">
-            <Zap size={24} className="text-accent animate-pulse opacity-50" />
+        {/* ─── Transaction Table ─── */}
+        <Suspense
+          fallback={
+            <div className="w-full h-96 flex items-center justify-center bg-gradient-to-b from-white/[0.04] to-transparent rounded-2xl border border-border-default mt-12">
+              <Zap size={24} className="text-accent animate-pulse opacity-50" />
+            </div>
+          }
+        >
+          <div className="mt-12">
+            <TransactionTable />
           </div>
-        }
-      >
-        <TransactionTable transactions={transactions} />
-      </Suspense>
+        </Suspense>
+      </LiveTransactionsProvider>
     </div>
   );
 }
