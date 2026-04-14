@@ -1,6 +1,6 @@
 "use client";
 
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { useMemo, useState, useEffect, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type Transaction } from "@/lib/validators/fraud";
 import { cn } from "@/lib/utils";
@@ -51,6 +51,11 @@ export function TransactionTable() {
   const searchParams = useSearchParams();
   const params = new URLSearchParams(searchParams.toString());
   const { liveTransactions, streamStatus } = useSharedLiveTransactions();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const currentPage = Number(params.get("page") ?? 1);
   const fraudFilter = params.get("fraud");
@@ -89,14 +94,25 @@ export function TransactionTable() {
             <p className="text-xs text-foreground-muted">
               {filtered.length} bản ghi
             </p>
-            <span
-              className={cn(
-                "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest",
-                STREAM_BADGE_COLORS[streamStatus]
-              )}
-            >
-              {STREAM_BADGE_LABELS[streamStatus]}
-            </span>
+            {mounted ? (
+              <span
+                className={cn(
+                  "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest",
+                  STREAM_BADGE_COLORS[streamStatus]
+                )}
+              >
+                {STREAM_BADGE_LABELS[streamStatus]}
+              </span>
+            ) : (
+              <span
+                className={cn(
+                  "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-mono uppercase tracking-widest",
+                  STREAM_BADGE_COLORS["connecting"]
+                )}
+              >
+                {STREAM_BADGE_LABELS["connecting"]}
+              </span>
+            )}
           </div>
         </div>
         
