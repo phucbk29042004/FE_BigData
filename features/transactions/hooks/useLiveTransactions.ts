@@ -33,12 +33,18 @@ export function useLiveTransactions(initialTransactions: Transaction[]) {
       try {
         const payload = JSON.parse(message.data);
         const parsed = TransactionSchema.safeParse(payload);
-        if (!parsed.success) return;
+        if (!parsed.success) {
+          console.warn("🚨 [Realtime SSE] Giao dịch từ Redis bị chạm màng lọc Zod Schema (Nên không thể Render UI):", parsed.error.issues);
+          return;
+        }
 
+        console.log("🟢 [Realtime SSE] Nhận thành công giao dịch mới từ Redis:", parsed.data.transaction_id);
+        
         setStreamedTransactions((previous) =>
           upsertTransaction(previous, parsed.data),
         );
-      } catch {
+      } catch (error) {
+        console.error("🚨 [Realtime SSE] Lỗi rác JSON từ Backend đẩy xuống:", error);
         // Keep stream alive even if one event has malformed JSON.
       }
     };

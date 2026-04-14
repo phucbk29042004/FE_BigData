@@ -1,4 +1,4 @@
-﻿import { TransactionSchema, type Transaction } from "@/lib/validators/fraud";
+import { TransactionSchema, type Transaction } from "@/lib/validators/fraud";
 
 export type TransactionStreamConfig = {
   restUrl: string;
@@ -100,22 +100,21 @@ export async function readRecentTransactions(
 ): Promise<Transaction[]> {
   const safeLimit = clamp(limit, 1, 1000);
 
-  const fromStream = await readSnapshotFromStream(config, safeLimit);
-  if (fromStream.length > 0) {
-    return fromStream;
-  }
+  const [fromStream, fromJsonKeys, fromLists, fromKv] = await Promise.all([
+    readSnapshotFromStream(config, safeLimit),
+    readSnapshotFromJsonKeys(config, safeLimit),
+    readSnapshotFromLists(config, safeLimit),
+    readSnapshotFromKv(config, safeLimit),
+  ]);
 
-  const fromJsonKeys = await readSnapshotFromJsonKeys(config, safeLimit);
-  if (fromJsonKeys.length > 0) {
-    return fromJsonKeys;
-  }
+  const combined = [
+    ...fromStream,
+    ...fromJsonKeys,
+    ...fromLists,
+    ...fromKv,
+  ];
 
-  const fromLists = await readSnapshotFromLists(config, safeLimit);
-  if (fromLists.length > 0) {
-    return fromLists;
-  }
-
-  return readSnapshotFromKv(config, safeLimit);
+  return finalizeTransactions(combined, safeLimit);
 }
 
 async function readSnapshotFromStream(
@@ -582,14 +581,14 @@ function parseFieldPairs(rawFields: unknown): Record<string, string> {
 
 function mapRecordToTransaction(rawFields: Record<string, string>): Transaction | null {
   const payload = normalizePayload(rawFields);
-  const transactionId = pickString(payload, "transaction_id");
-  const senderId = pickString(payload, "sender_id");
-  const receiverId = pickString(payload, "receiver_id");
-  const timestamp = parseTimestamp(payload.timestamp);
-  const amount = toFiniteNumber(payload.amount);
-
-  if (!transactionId || !senderId || !receiverId || !timestamp || amount === undefined || amount <= 0) {
-    return null;
+  const transactionId = pickString(payload, "transaction_id") ?? `TX-${crypto.randomUUID()}`;
+  const senderId = pickString(payload, "sender_id") ?? "UNKNOWN";
+  const receiverId = pickString(payload, "receiver_id") ?? "UNKNOWN";
+  const timestamp = parseTimestamp(payload.timestamp) ?? new Date().toISOString();
+  let amount = toFiniteNumber(payload.amount);
+  
+  if (amount === undefined) {
+    amount = 0; // Fallback to 0 instead of dropping
   }
 
   const normalizedFraudType = parseFraudType(payload.fraud_type);

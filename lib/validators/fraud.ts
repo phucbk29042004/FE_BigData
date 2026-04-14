@@ -13,7 +13,7 @@ export const TransactionSchema = z.object({
   sender_id: z.string(),
   receiver_id: z.string(),
   type: z.enum(["PAYMENT", "TRANSFER", "CASH_OUT"]),
-  amount: z.number().positive(),
+  amount: z.number().nonnegative(),
   old_balance_sender: z.number().nonnegative(),
   new_balance_sender: z.number().nonnegative(),
   device_id: z.string(),
